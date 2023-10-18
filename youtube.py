@@ -4,8 +4,8 @@ from db import sql
 import os
 
 # Set Up the API Client:
-youtube_api_key = "AIzaSyBZnDIQ0HhAKua1dEzbW3gq1FRs97lW87Q" # = 
-youtube = build("youtube", "v3", developerKey=youtube_api_key)# os.getenv("YOUTUBE_API_KEY"))
+youtube_api_key = os.getenv("YOUTUBE_API_KEY")
+youtube = build("youtube", "v3", developerKey=youtube_api_key)# 
 
 def search_videos(youtube, query, max_results = 20):
     search_response = youtube.search().list(
