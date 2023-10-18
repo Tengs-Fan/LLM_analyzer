@@ -1,9 +1,10 @@
+import os
 from db import mongo
 import praw
 
 reddit = praw.Reddit(
-    client_id='VhfysQkm3DKqlqLyZo3A_w',
-    client_secret='4pw96bwSjGIRU-w-ArZOTSlU76vLug',
+    client_id=os.getenv('REDDIT_CLIENT_ID'),
+    client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
     user_agent='macos:research_get_comment:v0.1 (by u/Frind-Study)'
 )
 
