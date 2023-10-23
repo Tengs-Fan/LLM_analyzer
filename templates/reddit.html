@@ -9,10 +9,22 @@
     <style>
         body {
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            font-family: Arial, sans-serif;
         }
-        .post-card {
+        h1 {
+            font-weight: bold;
+            color: #333;
+        }
+        .post-card, .list-group-item {
             margin-bottom: 20px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+            border-radius: 5px;
+        }
+        .list-group-item:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
         }
         .comment-card {
             margin-top: 10px;
@@ -21,72 +33,110 @@
         .comment-author {
             font-weight: bold;
         }
+        .badge {
+            transition: 0.3s;
+        }
+        .badge:hover {
+            opacity: 0.7;
+        }
+
+        .post-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;  /* align top */
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #ffffff;  /* White background for contrast */
+            border: 1px solid #e0e0e0;  /* Light border */
+            border-radius: 5px;  /* Rounded corners */
+            transition: box-shadow 0.3s;
+        }
+        .post-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);  /* Add a shadow on hover for interactive feel */
+        }
+        .post-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .post-content-snippet {
+            display: block;  /* Use block to ensure it takes up full width */
+            margin-top: 5px;  /* Small space above the content snippet */
+            color: #666666;  /* Slightly grey for distinction */
+            font-size: 0.9rem;  /* Smaller text for the content snippet */
+        }
+        .post-meta {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .post-meta .badge {
+            margin-top: 5px;  /* Space above the upvotes badge */
+        }
     </style>
 </head>
 <body>
 
 <div class="container mt-5">
-    <h1>All Reddit Posts</h1>
+   <h1>All Reddit Posts</h1>
+
+    <!-- TODO: Have better format -->
+    <form action="/submit_reddit_url" method="post">
+        <input type="url" name="url" required>
+        <input type="submit" value="Submit">
+    </form>
     
-    <!-- Displaying overall stats -->
-    <div class="my-4">
-        <p><strong>Total Posts:</strong> {{ total_posts }}</p>
-        <!-- <p><strong>Average Upvotes per Post:</strong> {{ average_upvotes|round(2) }}</p> -->
+    <!-- Sorting & Search -->
+    <div class="d-flex justify-content-between my-4">
+        <!-- Sorting Dropdown -->
+        <div>
+            <label for="sortOrder" class="me-2">Sort by:</label>
+            <select id="sortOrder" class="form-select">
+                <option value="upvotesDesc">Upvotes (High to Low)</option>
+                <option value="upvotesAsc">Upvotes (Low to High)</option>
+                <!-- Add more sorting options if needed -->
+            </select>
+        </div>
+        
+        <!-- Search Bar -->
+        <div>
+            <input type="text" class="form-control" placeholder="Search posts...">
+        </div>
     </div>
-
-    Displaying a summarized list of Reddit posts
-    <ul class="list-group mt-4">
+    <!-- Posts List -->
+    <div>
     {% for post in posts %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a href="{{ url_for('reddit', post_id=post._id) }}">
-                {{ post.title }}
-            </a>
-            <span class="badge bg-primary rounded-pill">{{ post.upvotes }} Upvotes</span>
-        </li>
+        <div class="post-card">
+            <div>
+                <a href="{{ url_for('reddit_post', post_id=post._id) }}" class="post-title text-decoration-none text-dark">
+                    {{ post.title }}
+                </a>
+                <span class="post-content-snippet">
+                    {{ post.content[:120] }} ...  <!-- You can adjust the length as per your requirement -->
+                </span>
+            </div>
+            <div class="post-meta">
+                <span class="badge bg-primary rounded-pill">{{ post.upvotes }} Upvotes</span>
+            </div>
+        </div>
     {% endfor %}
-    </ul>
-
-</div>
-
-<div class="container">
-
-    <!-- Sample Reddit Post -->
-    <div class="card post-card">
-        <div class="card-header">
-            <h5 class="card-title">Any Interest in a low-cost Open Source FPGA Handheld?</h5>
-            <small>Upvotes: 12 | Upvote Ratio: 0.75</small>
-        </div>
-        <div class="card-body">
-            <p class="card-text">I have been speaking to a gaming company that is thinking about creati…</p>
-        </div>
-
-        <!-- Comments for this post -->
-        <div class="card comment-card">
-            <div class="card-body">
-                <p class="comment-author">kclough</p>
-                <p>Speaking as a developer, but not a FPGA developer, the idea of "if you…" - <small>Upvotes: 15 | Created: [converted UTC time]</small></p>
-            </div>
-        </div>
-        <div class="card comment-card">
-            <div class="card-body">
-                <p class="comment-author">janosaudron</p>
-                <p>FPGA and Low cost in the same sentence? Not sure about that - <small>Upvotes: 5 | Created: [converted UTC time]</small></p>
-            </div>
-        </div>
-        <!-- End of Comments -->
-
     </div>
-    <!-- End of Reddit Post -->
 
-    <!-- Add more posts similarly -->
+
+    <!-- Pagination / Load More -->
+    <div class="d-flex justify-content-center mt-4">
+        <!-- Example of a "Load More" button -->
+        <button class="btn btn-secondary">Load More</button>
+        
+        <!-- Or use a pagination component -->
+        <!-- <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul> -->
+    </div>
 
 </div>
-
-<!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
 </body>
 </html>
