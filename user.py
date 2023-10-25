@@ -1,4 +1,8 @@
+import os
+from sqlalchemy import create_engine, text
 from werkzeug.security import generate_password_hash, check_password_hash
+
+engine = create_engine(os.getenv("DATABASE_URL", "sqlite+pysqlite:///user.db"), echo=True)
 
 class User:
     def __init__(self, username, password):
