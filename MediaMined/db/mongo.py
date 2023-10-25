@@ -2,12 +2,14 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 client = MongoClient('localhost', 27017)
-db = client['database']
-video_texts = db['video_texts']
+reddit = client['reddit']
+youtube = client['database']
 
 #######################################
 # Text transcript of Youtube Video
 #######################################
+video_texts = youtube['video_texts']
+
 def insert2video_text(document):
     try:
         video_texts.insert_one(document)
@@ -24,17 +26,17 @@ def get_from_id(video_id):
 #######################################
 # Reddit Comments
 #######################################
-reddit_post = db['reddit_post']
-reddit_comments = db['reddit_comments']
+reddit_posts = reddit['reddit_post']
+reddit_comments = reddit['reddit_comments']
 
 def insert_post(document):
     try:
-        reddit_post.insert_one(document)
+        reddit_posts.insert_one(document)
     except Exception as e:
         print(f"Could not store post in MongoDB. Error: {e}")
 
 def find_post(post_id):
-     return reddit_post.find_one({"_id": post_id})
+     return reddit_posts.find_one({"_id": post_id})
 
 def insert_comment(document):
     try:
@@ -63,3 +65,14 @@ def find_comments_by_post(post_id):
     comments_list = list(comments_cursor)
     return comments_list
 
+def get_all_posts():
+    """
+    Retrieves all documents from the reddit_post collection.
+
+    :return: A list of documents.
+    """
+    cursor = reddit_posts.find()
+    return list(cursor)
+
+def get_total_posts_count():
+    return reddit_posts.count_documents({})
