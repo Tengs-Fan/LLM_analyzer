@@ -1,6 +1,9 @@
 import os
-from db import mongo
 import praw
+from MediaMined.db import mongo
+
+from dotenv import load_dotenv
+load_dotenv()
 
 reddit = praw.Reddit(
     client_id=os.getenv('REDDIT_CLIENT_ID'),
@@ -47,11 +50,3 @@ def get_content(url, sort='all', limit=None):
             'replies_count': len(comment.replies)
         }
         mongo.insert_comment(comment_data)
-
-# get_content('https://www.reddit.com/r/fpgagaming/comments/17a1ph8/any_interest_in_a_lowcost_open_source_fpga/')
-# print(mongo.find_post('17a1ph8'))
-comments = mongo.find_comments_by_post('17a1ph8')  #
-
-# mongo.find_comment_by_id()
-# Or just the top comments
-# top_comments = get_comments('https://www.reddit.com/r/example/comments/abc123/example_thread/', sort='top', limit=10)
