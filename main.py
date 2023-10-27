@@ -9,7 +9,6 @@ main = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-
 @main.route('/reddit')
 @login_required
 def reddits():
