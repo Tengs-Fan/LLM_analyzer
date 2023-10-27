@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import login_required
+from logging import getLogger
 from MediaMined.db import mongo 
 import MediaMined.reddit as reddit
 
 main = Blueprint('main', __name__)
+logger = getLogger(__name__)
 
 @main.route('/')
 def index():
@@ -12,6 +14,7 @@ def index():
 @main.route('/reddit')
 @login_required
 def reddits():
+    logger.info("access reddit database")
     total_posts = mongo.get_total_posts_count()
     posts = mongo.get_all_posts()
     average_upvotes = 0.7
@@ -34,3 +37,4 @@ def submit_reddit_url():
     reddit.get_content(url);
     
     return redirect(url_for('reddits'))  # Redirect back to the index page
+

@@ -1,8 +1,10 @@
 from user import User
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
+from logging import getLogger
  
 auth = Blueprint('auth', __name__)
+logger = getLogger(__name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -13,36 +15,17 @@ def login():
         if user and user.check_password(password):
             login_user(user)
             flash('Logged in successfully.')
-            return redirect(url_for('index'))
+            logger.info(f"User {user_id} logged in successfully.")
+            return redirect(url_for('main.index'))
         else:
             flash('Invalid username or password.')
+            logger.warning(f"Failed login attempt for user {user_id}.")
     return render_template('login.html')
 
 @auth.route('/logout')
 @login_required
 def logout():
+    logger.info(f"User {current_user} logged out.")
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('main.index'))
 
-
-# somewhere to login
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         password = request.form['password']        
-#         if password == username + "_secret":
-#             id = username.split('user')[1]
-#             user = User(id)
-#             login_user(user)
-#             return redirect(request.args.get("next"))
-#         else:
-#             return abort(401)
-#     else:
-#         return Response('''
-#         <form action="" method="post">
-#             <p><input type=text name=username>
-#             <p><input type=password name=password>
-#             <p><input type=submit value=Login>
-#         </form>
-#         ''')

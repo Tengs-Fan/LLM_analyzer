@@ -4,14 +4,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 engine = create_engine(os.getenv("DATABASE_URL", "sqlite+pysqlite:///user.db"), echo=True)
 
-creation_users = text('''
-CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    password_hash TEXT
-);
-''')
-with engine.connect() as conn:
-    result = conn.execute(creation_users)
+def init_userDB():
+    creation_users = text('''
+    CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        password_hash TEXT
+    );
+    ''')
+    with engine.connect() as conn:
+        conn.execute(creation_users)
 
 class User:
     def __init__(self, id=None, password=None, password_hash=None):
@@ -20,8 +21,8 @@ class User:
             self.password_hash = generate_password_hash(password)
         else:
             self.password_hash = password_hash
-        self._is_authenticated = False
-        self._is_active = True
+        self.is_authenticated = True
+        self.is_active = True
         self.is_anonymous = False
 
     # Flask-Login compatibility
@@ -36,13 +37,8 @@ class User:
             return False
         return check_password_hash(self.password_hash, password)
 
-    @property
-    def is_active(self):
-        return self._is_active
- 
-    @property
-    def is_authenticated(self):
-        return self._is_authenticated   
+    def set_authenticated(self, auth = True):
+        self.is_authenticated = auth
 
     # Database interactions
     @classmethod
@@ -52,6 +48,8 @@ class User:
             result = conn.execute(sql, {"user_id": user_id}).fetchone()
             if result:
                 return cls(id=result[0], password_hash=result[1])
+            else:
+                return None
     
     def save(self):
         sql = text(
