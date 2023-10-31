@@ -22,11 +22,12 @@ AUDIO_DIR = "Youtube"
 # 3. Platform, Original content, Summarized Content (1K Words), Subscribers, Channel Name, 
 # 4. Comment Content, Thumb ups, Commenter Name, Discussions, Discussion Names, Discussion Thumb ups
 
-def store_dictation_and_comments(url):
-    get_dictation(url)
+def get_dictation_and_comments(url):
     video_id = utils.extract_id_from_url(url)
-    # get_captions(youtube, video_id)
-    # get_comments(video_id)
+    print(f"Getting dictation for {video_id}.")
+    store_dictation(url)
+    print(f"Getting comments for {video_id}.")
+    store_comments(video_id)
 
 def search_videos(youtube, query, max_results = 20):
     search_response = youtube.search().list(
@@ -41,11 +42,11 @@ def search_videos(youtube, query, max_results = 20):
 #################################################################################
 #                       Caption
 #################################################################################
-def get_dictation(video_url):
+def store_dictation(video_url):
     video_id = utils.extract_id_from_url(video_url)
 
     if mongo.youtube_get_dictation_by_video_id(video_id):
-        print(f"Transcript for {video_id} already exists in database.")
+        print(f"dictation for {video_id} already exists in database.")
         return None
 
     # Attempt to get captions
@@ -57,10 +58,10 @@ def get_dictation(video_url):
 
     # If no captions, download audio
     audio_filepath = download_audio(video_url)
-    # Get dicatation from audio
-    dicatation = audio2text(audio_filepath)
-    if dicatation:
-        document = {"_id": video_id, "text": dicatation}
+    # Get dictation from audio
+    dictation = audio2text(audio_filepath)
+    if dictation:
+        document = {"_id": video_id, "text": dictation}
         mongo.youtube_insert_dictation(document)
     else:
         raise Exception("Can't get diactation")
@@ -179,7 +180,7 @@ def audio2text(audio_filepath):
 #################################################################################
 #   Comments
 #################################################################################
-def get_comments(video_id):
+def store_comments(video_id):
     request = youtube.commentThreads().list(
         part="snippet",
         videoId=video_id,
@@ -216,8 +217,3 @@ def process_comment_item(item):
     }
 
     return comment_data
-
-# store_dictation_comments("https://www.youtube.com/watch?v=NQbTMQZViTM")
-# store_dictation_comments("https://www.youtube.com/watch?v=6_RdnVtfZPY")
-store_dictation_and_comments("https://www.youtube.com/watch?v=zbSypV2ixjE")
-
