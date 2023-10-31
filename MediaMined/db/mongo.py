@@ -2,7 +2,7 @@ from pymongo import MongoClient
 
 client = MongoClient('localhost', 27017)
 reddit = client['reddit']
-youtube = client['database']
+youtube = client['youtube']
 
 #######################################
 # Text transcript of Youtube Video
