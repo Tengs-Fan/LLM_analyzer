@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ video.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="mb-4">{{ video.title }}</h2>
+    
+    <!-- Embed the YouTube video -->
+    <div class="embed-responsive embed-responsive-16by9 mb-4">
+        <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/{{ video.id }}" allowfullscreen></iframe>
+    </div>
+    
+    <h4>Comments:</h4>
+    <ul class="list-group">
+        {% for comment in comments %}
+        <li class="list-group-item">
+            <strong>{{ comment.author }}</strong>: {{ comment.body }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+</body>
+</html>
+
