@@ -11,6 +11,10 @@ class TestUrlExtractor(unittest.TestCase):
         youtube_url = 'https://www.youtube.com/watch?v=B2NkjV-hSwk'
         self.assertEqual(extract_id_from_url(youtube_url), 'B2NkjV-hSwk')
 
+    def test_extract_youtube_id2(self):
+        youtube_url = 'https://www.youtube.com/watch?v=zbSypV2ixjE'
+        self.assertEqual(extract_id_from_url(youtube_url), 'zbSypV2ixjE')
+
     # def test_extract_short_youtube_id(self):
     #     short_youtube_url = 'https://youtu.be/B2NkjV-hSwk'
     #     self.assertEqual(extract_id_from_url(short_youtube_url), 'B2NkjV-hSwk')
