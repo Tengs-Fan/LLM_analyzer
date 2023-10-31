@@ -1,6 +1,6 @@
 import os
 import praw
-from MediaMined.db import mongo
+from .db import mongo
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,7 +11,16 @@ reddit = praw.Reddit(
     user_agent='macos:research_get_comment:v0.1 (by u/Frind-Study)'
 )
 
-def get_content(url, sort='all', limit=None):
+def get_top_posts(subreddit_name, limit=None):
+    subreddit = reddit.subreddit(subreddit_name)
+    for submission in subreddit.top('all', limit=limit):  # 'all' for all-time top posts
+        if submission.score > 100:  # Filter by upvotes
+            try:
+                get_post_and_comments(submission.url)
+            except :
+                print(f'Subreddit post not found: {submission.url}')
+
+def get_post_and_comments(url, sort='all', limit=None):
     # Get the submission object for the given URL
     submission = reddit.submission(url=url)
 
@@ -25,7 +34,7 @@ def get_content(url, sort='all', limit=None):
         'title': submission.title,
         'content': submission.selftext
     }
-    mongo.insert_post(post)
+    mongo.reddit_insert_post(post)
 
     ############## Get Comments #######################
 
@@ -49,4 +58,4 @@ def get_content(url, sort='all', limit=None):
             'created_utc': comment.created_utc,
             'replies_count': len(comment.replies)
         }
-        mongo.insert_comment(comment_data)
+        mongo.reddit_insert_comment(comment_data)
