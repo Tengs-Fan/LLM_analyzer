@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 
 def extract_id_from_url(url):
     """
@@ -29,20 +28,34 @@ def construct_reddit_url(submission_id):
     reddit_url = f"{base_url}{submission_id}"
     return reddit_url
 
-def format_utc_timestamp(utc_timestamp):
+def construct_reddit_url_from_permalink(submission_permalink):
+    # Regular expression pattern for a valid Reddit permalink
+    pattern = r'^/r/\w+/comments/\w+/.+/?$'
+    
+    # Check if the permalink is valid
+    if re.match(pattern, submission_permalink):
+        # If valid, construct the full URL
+        base_url = 'https://www.reddit.com'
+        full_url = f"{base_url}{submission_permalink}"
+        return full_url
+    else:
+        # If not valid, return a message or raise an exception
+        raise ValueError("Not a valid permalink for reddit")
+    
+from datetime import datetime
+def format_utc_to_iso8601(utc_timestamp):
     """
-    Converts a UTC timestamp to a human-readable string.
+    Converts a UTC timestamp to a ISO8601 string (used by Youtube).
 
     :param utc_timestamp: The UTC timestamp as a float or int.
-    :return: The human-readable string representation of the timestamp.
+    :return: The ISO8601 string representation of the timestamp.
     """
     # Convert the timestamp to a datetime object
-    dt_object = datetime.utcfromtimestamp(utc_timestamp)
+    utc_datetime = datetime.utcfromtimestamp(utc_timestamp)
     
     # Format the datetime object as a string
-    human_readable_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
-
-    return human_readable_time
+    iso8601_formatted_string = utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return iso8601_formatted_string
 
 def format_dict(d, indent=0):
     for key, value in d.items():
