@@ -81,5 +81,5 @@ def reddit_get_all_posts():
     cursor = reddit_posts.find()
     return list(cursor)
 
-def get_total_posts_count():
+def reddit_get_total_posts_count():
     return reddit_posts.count_documents({})

@@ -14,8 +14,8 @@ def index():
 @main.route('/reddit')
 @login_required
 def reddits():
-    total_posts = mongo.get_total_posts_count()
-    posts = mongo.get_all_posts()
+    total_posts = mongo.reddit_get_total_posts_count()
+    posts = mongo.reddit_get_all_posts()
     average_upvotes = 0.7
     return render_template('reddit.html', posts=posts, total_posts=total_posts, average_upvotes = average_upvotes)
 
@@ -24,9 +24,9 @@ def reddits():
 def reddit_post(post_id):
     logger.info("access reddit posts")
     # Fetch the post details from the database
-    post = mongo.find_post(post_id)
+    post = mongo.reddit_find_post(post_id)
     # Fetch the comments associated with this post
-    comments = mongo.find_comments_by_post(post_id)
+    comments = mongo.reddit_find_comments_by_post(post_id)
     return render_template('reddit_post.html', post=post, comments=comments)
 
 @main.route('/submit_reddit_url', methods=['POST'])
