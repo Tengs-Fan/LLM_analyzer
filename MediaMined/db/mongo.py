@@ -42,8 +42,20 @@ def reddit_insert_post(document):
     except Exception as e:
         print(f"Could not store post in MongoDB. Error: {e}")
 
+def reddit_exist_post(post_id):
+    """
+    :return: If the post exist, True; not exist, False
+    """
+    return reddit_posts.count_documents({ '_id': post_id }, limit = 1) != 0
+
 def reddit_get_post(post_id):
      return reddit_posts.find_one({"_id": post_id})
+
+def reddit_exist_comment(post_id):
+    """
+    :return: If the comment exist, True; not exist, False
+    """
+    return reddit_comments.count_documents({ '_id': post_id }, limit = 1) != 0
 
 def reddit_insert_comment(document):
     try:
