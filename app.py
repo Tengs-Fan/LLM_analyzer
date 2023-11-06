@@ -5,12 +5,16 @@ from flask_login import LoginManager
 from dotenv import load_dotenv
 load_dotenv()
 
-import logging
-from logging.handlers import RotatingFileHandler
-
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'my-secret-key')  # Provide a fallback default if not set in environment
+
+    # Session settings
+    from datetime import timedelta
+    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(seconds=1800)  # 30 minutes
+    app.config['SESSION_PERMANENT'] = False
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
 
     # Setup Flask-Login
     login_manager = LoginManager()
@@ -40,6 +44,8 @@ def create_app():
         return 'Unhandled Exception', 500
 
     # Logging 
+    import logging
+    from logging.handlers import RotatingFileHandler
     logging.basicConfig(filename='app.log', level=logging.INFO, 
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -49,7 +55,7 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True)
-    # app.run(host='0.0.0.0', port=8088, debug=True)
+    # app.run(host='0.0.0.0', port=8088, debug=False)
 
 def setup_logging(app):
     if not app.debug:
