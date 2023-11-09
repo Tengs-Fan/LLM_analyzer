@@ -22,14 +22,23 @@ AUDIO_DIR = "Youtube"
 # 3. Platform, Original content, Summarized Content (1K Words), Subscribers, Channel Name, 
 # 4. Comment Content, Thumb ups, Commenter Name, Discussions, Discussion Names, Discussion Thumb ups
 
-def get_dictation_and_comments(url):
-    video_id = utils.extract_id_from_url(url)
-    print(f"Getting dictation for {video_id}.")
-    store_dictation(url)
-    print(f"Getting comments for {video_id}.")
-    store_comments(video_id)
+def search_and_get(query):
+    search_results = search_videos(query)
+    for item in search_results:
+        video_id = item['id']['videoId']
+        get_dictation_and_comments(video_id)
 
-def search_videos(youtube, query, max_results = 20):
+def get_dictation_and_comments(video_id):
+    try: 
+        video_url = utils.construct_youtube_url(video_id)
+        print(f"Getting dictation for {video_id}.")
+        store_dictation(video_url)
+        print(f"Getting comments for {video_id}.")
+        store_comments(video_id)
+    except Exception as e:
+        print(f"Can't get {video_id} because:", e)
+
+def search_videos(query, max_results = 50):
     search_response = youtube.search().list(
         q=query,
         type="video",
@@ -47,7 +56,7 @@ def store_dictation(video_url):
 
     if mongo.youtube_get_dictation_by_video_id(video_id):
         print(f"dictation for {video_id} already exists in database.")
-        return None
+        return 
 
     # Attempt to get captions
     # caption_id = find_captions(video_id)
@@ -188,10 +197,16 @@ def store_comments(video_id):
         order="relevance",
         maxResults=100
     )
-    response = request.execute()
-    for item in response["items"]:
-        comment = process_comment_item(item)
-        mongo.youtube_insert_comments(comment)
+    try: 
+        response = request.execute()
+        for item in response["items"]:
+            comment = process_comment_item(item)
+            if mongo.youtube_exist_comment(comment["_id"]):
+                print(f'Comment {comment["_id"]} of video {comment["video_id"]} already exists')
+            else:
+                mongo.youtube_insert_comments(comment)
+    except Exception as e:
+        print(f'can not get comment of {video_id} because:', e)
 
 def process_comment_item(item):
     snippet = item['snippet']
@@ -217,3 +232,38 @@ def process_comment_item(item):
     }
 
     return comment_data
+
+# This will keep the structure of youtube comment
+# def get_comments(video_id):
+#     # Get the top-level comments first
+#     top_level_request = youtube.commentThreads().list(
+#         part="snippet",
+#         videoId=video_id,
+#         textFormat="plainText"
+#     )
+#     top_level_response = top_level_request.execute()
+
+#     comments_data = []
+
+#     for item in top_level_response["items"]:
+#         top_level_comment = process_comment_item(item)
+#         top_level_comment['parent_id'] = None  # For top-level comments, parent_id is None
+#         comments_data.append(top_level_comment)
+
+#         # Check for replies to this top-level comment
+#         if item['snippet']['totalReplyCount'] > 0:
+#             replies_request = youtube.comments().list(
+#                 part="snippet",
+#                 parentId=item['id'],
+#                 textFormat="plainText"
+#             )
+#             replies_response = replies_request.execute()
+
+#             for reply_item in replies_response['items']:
+#                 reply_comment = process_comment_item(reply_item)
+#                 reply_comment['parent_id'] = item['id']  # Set the parent_id to the top-level comment ID
+#                 comments_data.append(reply_comment)
+
+#     return comments_data
+
+search_and_get("HongKong Resistance")
