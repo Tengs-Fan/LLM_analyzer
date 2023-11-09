@@ -28,7 +28,7 @@ def get_top_posts(subreddit_name, limit=None):
                 print("Met exception when trying to get post:", e)
                 print(f'Subreddit post not found: {submission.url}, id: {submission.id}, permalink: {submission.permalink}')
 
-def get_post_and_comments(url, comment_sort="top", limit=None):
+def get_post_and_comments(url, comment_sort="top", comment_limit=100):
     # Get the submission object for the given URL
     submission = reddit.submission(url=url)
 
@@ -47,12 +47,11 @@ def get_post_and_comments(url, comment_sort="top", limit=None):
     if (not mongo.reddit_exist_post(submission.id)):
         mongo.reddit_insert_post(post)
         print(f"Inserted post of {submission.id} to database, Now, I'm gonna fetch and insert the comments ");
-        get_comments_from_submission(submission)
+        get_comments_from_submission(submission, comment_sort=comment_sort, limit=comment_limit)
     else:
         print(f'Post {post["_id"]} at {post["url"]} already existed in database')
 
-
-def get_comments_from_submission(submission, comment_sort="top", limit=None):
+def get_comments_from_submission(submission, comment_sort="top", limit=100):
 
     submission.comment_sort = comment_sort
     while True:
