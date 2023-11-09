@@ -22,11 +22,20 @@ AUDIO_DIR = "Youtube"
 # 3. Platform, Original content, Summarized Content (1K Words), Subscribers, Channel Name, 
 # 4. Comment Content, Thumb ups, Commenter Name, Discussions, Discussion Names, Discussion Thumb ups
 
-def search_and_get(query):
+def search_and_get(query, view_threshold = 10000):
+
     search_results = search_videos(query)
     for item in search_results:
         video_id = item['id']['videoId']
-        get_dictation_and_comments(video_id)
+        video_request = youtube.videos().list(
+            part="statistics",
+            id=video_id
+        )
+        video_response = video_request.execute()
+        view_count = int(video_response['items'][0]['statistics']['viewCount'])
+        # Check if view count exceeds the threshold
+        if view_count > view_threshold:
+            get_dictation_and_comments(video_id)
 
 def get_dictation_and_comments(video_id):
     try: 
@@ -266,4 +275,4 @@ def process_comment_item(item):
 
 #     return comments_data
 
-search_and_get("HongKong Resistance")
+search_and_get("HongKong Resistance", 5000)
