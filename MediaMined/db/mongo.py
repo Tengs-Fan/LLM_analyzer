@@ -22,8 +22,14 @@ def youtube_insert_comments(document):
     except Exception as e:
         print(f"Could not store comments of video in MongoDB. Error: {e}")
 
+def youtube_exist_dictation(video_id):
+    return youtube_dictation.count_documents({ '_id': video_id }, limit = 1) != 0
+
 def youtube_get_dictation_by_video_id(video_id):
     return youtube_dictation.find_one({"_id": video_id})
+
+def youtube_exist_comment(comment_id):
+    return youtube_comments.count_documents({ '_id': comment_id }, limit = 1) != 0
 
 def youtube_get_comment_by_video_id(video_id):
     comments_cursor = youtube_comments.find({'video_id': video_id})
