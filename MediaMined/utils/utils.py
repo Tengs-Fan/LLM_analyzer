@@ -28,6 +28,10 @@ def construct_reddit_url(submission_id):
     reddit_url = f"{base_url}{submission_id}"
     return reddit_url
 
+def construct_youtube_url(video_id):
+    base_url = "https://www.youtube.com/watch?v="
+    return f"{base_url}{video_id}"
+
 def construct_reddit_url_from_permalink(submission_permalink):
     # Regular expression pattern for a valid Reddit permalink
     pattern = r'^/r/\w+/comments/\w+/.+/?$'
