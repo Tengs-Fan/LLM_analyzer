@@ -61,6 +61,14 @@ def format_utc_to_iso8601(utc_timestamp):
     iso8601_formatted_string = utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
     return iso8601_formatted_string
 
+def iso8601_to_short_format(iso8601_string):
+    # Parse the ISO 8601 formatted string into a datetime object
+    datetime_obj = datetime.strptime(iso8601_string, "%Y-%m-%dT%H:%M:%SZ")
+    # Format the datetime object into the specified custom format
+    custom_format_string = datetime_obj.strftime("%Y %b %d %H:%M")
+    return custom_format_string
+
+
 def format_dict(d, indent=0):
     for key, value in d.items():
         print(' ' * indent + str(key) + ':', end='')
