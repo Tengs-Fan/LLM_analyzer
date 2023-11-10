@@ -4,6 +4,30 @@ client = MongoClient('localhost', 27017)
 reddit = client['reddit']
 youtube = client['youtube']
 
+def get_items_by_id(collection, key, id):
+    """
+    Searches for and returns all comments belonging to a specific post_id.
+
+    :param collection: The collection to search
+    :param key: The key to search in the collection
+    :param id:  The ID of the submission to search comments for.
+    :return: A cursor to iterate over the comments belonging to the specified submission.
+    """
+    cursor = collection.find({key: id})
+    items_list = list(cursor)
+    if len(items_list) > 1:
+        return items_list
+    elif items_list:
+        return items_list[0]
+    else:
+        raise Exception(f"can't find this {id} of {key} in {collection}")
+
+def test_exist_in_collection(collection, key, id):
+    """
+    :return: If the id exist in collection, True; not exist, False
+    """
+    return collection.count_documents({ key: id }, limit = 1) != 0
+
 #######################################
 # Text transcript of Youtube Video
 #######################################
@@ -32,9 +56,7 @@ def youtube_exist_comment(comment_id):
     return youtube_comments.count_documents({ '_id': comment_id }, limit = 1) != 0
 
 def youtube_get_comment_by_video_id(video_id):
-    comments_cursor = youtube_comments.find({'video_id': video_id})
-    comments_list = list(comments_cursor)
-    return comments_list
+    return get_items_by_id(youtube_comments, 'video_id', video_id);
 
 #######################################
 # Reddit Comments
@@ -49,19 +71,13 @@ def reddit_insert_post(document):
         print(f"Could not store post in MongoDB. Error: {e}")
 
 def reddit_exist_post(post_id):
-    """
-    :return: If the post exist, True; not exist, False
-    """
-    return reddit_posts.count_documents({ '_id': post_id }, limit = 1) != 0
+    return test_exist_in_collection(reddit_posts, '_id', post_id)
 
 def reddit_get_post(post_id):
      return reddit_posts.find_one({"_id": post_id})
 
-def reddit_exist_comment(post_id):
-    """
-    :return: If the comment exist, True; not exist, False
-    """
-    return reddit_comments.count_documents({ '_id': post_id }, limit = 1) != 0
+def reddit_exist_comment(comment_id):
+    return test_exist_in_collection(reddit_comments, '_id', comment_id)
 
 def reddit_insert_comment(document):
     try:
@@ -70,23 +86,20 @@ def reddit_insert_comment(document):
         print(f"Could not store comment in MongoDB. Error: {e}")
 
 def reddit_get_comment_by_id(comment_id):
-    """
-    Searches for and returns a comment document based on the comment ID.
-
-    :param comment_id: The ID of the comment to search for.
-    :return: The comment document, or None if no comment with the given ID is found.
-    """
     comment = reddit_comments.find_one({'_id': comment_id})
     return comment
 
 def reddit_get_comments_by_post_id(post_id):
-    """
-    Searches for and returns all comments belonging to a specific post_id.
+    return get_items_by_id(reddit_comments, 'post_id', post_id)
 
-    :param post_id: The ID of the submission to search comments for.
-    :return: A cursor to iterate over the comments belonging to the specified submission.
-    """
-    comments_cursor = reddit_comments.find({'post_id': post_id})
+def reddit_get_top_comments_by_parent_id(parent_id, top_n = 50):
+    comments_cursor = reddit_comments.find({'parent_id': parent_id}).sort('upvotes', -1).limit(top_n)
+    comments_list = list(comments_cursor)
+    raise Exception("NYI")
+    return comments_list
+
+def reddit_get_top_comments_by_post_id(post_id, top_n = 50):
+    comments_cursor = reddit_comments.find({'post_id': "t3_" + post_id}).sort('upvotes', -1).limit(top_n)
     comments_list = list(comments_cursor)
     return comments_list
 
@@ -101,3 +114,4 @@ def reddit_get_all_posts():
 
 def reddit_get_total_posts_count():
     return reddit_posts.count_documents({})
+
