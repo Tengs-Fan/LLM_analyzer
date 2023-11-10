@@ -64,13 +64,14 @@ def format_video_dictation(video_dictation):
     # Format the video details including title, view count, etc.
     # Assuming you have a 'title' and 'viewCount' in your video_dictation object
     return f'''
-{utils.iso8601_to_short_format(video_dictation['published_at'])}
-Views: {video_dictation['viewCount']}
-Title: {video_dictation['title']}
-Dictation: 
-{video_dictation['transcript']}
+Dictation {video_dictation['text']}
 Comments:
 ---'''
+# {utils.iso8601_to_short_format(video_dictation['published_at'])}
+# Views: {video_dictation['viewCount']}
+# Title: {video_dictation['title']}
+# Dictation: 
+# {video_dictation['transcript']}
 
 def format_youtube_comments(comment):
     # Format the comment details
@@ -87,9 +88,9 @@ try:
 except Exception as e:
     print(f"Error composing for video :", e)
 
-try: 
-    text = compose_reddit_post("dfdqf8")
-    print(text)
-except Exception as e:
-    print("error composing {17a1ph8}:", e)
+# try: 
+#     text = compose_reddit_post("dfdqf8")
+#     print(text)
+# except Exception as e:
+#     print("error composing {17a1ph8}:", e)
 
