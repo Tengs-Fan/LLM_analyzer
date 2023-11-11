@@ -82,6 +82,3 @@ def get_comments_from_submission(submission, comment_sort="top", limit=100):
                 print(f'Comment {comment_data["_id"]} at {comment_data["post_id"]} already existed in database')
 
     print(f"Inserted comments of {submission.id} to database");
-
-get_top_posts("HongKong")
-get_top_posts("HongKongProtest")
