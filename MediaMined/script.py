@@ -1,10 +1,8 @@
 from .llm import * 
 from .youtube import *
 from .db import mongo
-# script to directly run in CLI
 
-# summarize_video_dictation("test", 10)
-get_stat("B2NkjV-hSwk")
+# script to directly run in CLI
 
 def update_videos():
     for video in mongo.youtube_get_all_dictations():
@@ -14,4 +12,5 @@ def update_videos():
 
 update_videos()
 
+# summarize_video_dictation("test", 10)
 

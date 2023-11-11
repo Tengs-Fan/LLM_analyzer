@@ -63,7 +63,7 @@ def get_stat(video_id):
         'view_count': stat['viewCount'],
         'like_count': stat['likeCount'],
         'favorite_count': stat['favoriteCount'],
-        'comment_count': stat['commentCount']
+        'comment_count': stat.get('commentCount', '0')  #if the the commentCount doesn't exist, set it to zero
     }
     return video_stat
 
