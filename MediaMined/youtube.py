@@ -8,26 +8,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set Up the API Client:
-youtube_api_key = os.getenv("YOUTUBE_API_KEY")
-youtube = build("youtube", "v3", developerKey=youtube_api_key) #, credentials=credentials) 
+YOUTUBE = build("youtube", "v3", developerKey=os.getenv("YOUTUBE_API_KEY")) #, credentials=credentials) 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Store the audio files in "Youtube" subfolder
 AUDIO_DIR = "Youtube"       
 
-# Set Up the API Client:
-# videos = search_videos(youtube, search_query)
-# 1. download related video
-# 2. get their text content
-# 3. Platform, Original content, Summarized Content (1K Words), Subscribers, Channel Name, 
-# 4. Comment Content, Thumb ups, Commenter Name, Discussions, Discussion Names, Discussion Thumb ups
-
 def search_and_get(query, view_threshold = 10000):
-
     search_results = search_videos(query)
     for item in search_results:
         video_id = item['id']['videoId']
-        video_request = youtube.videos().list(
+        video_request = YOUTUBE.videos().list(
             part="statistics",
             id=video_id
         )
@@ -48,7 +39,7 @@ def get_dictation_and_comments(video_id):
         print(f"Can't get {video_id} because:", e)
 
 def search_videos(query, max_results = 50):
-    search_response = youtube.search().list(
+    search_response = YOUTUBE.search().list(
         q=query,
         type="video",
         part="id,snippet",
@@ -56,6 +47,25 @@ def search_videos(query, max_results = 50):
     ).execute()
 
     return search_response['items']
+
+#################################################################################
+#                       Statistics
+#################################################################################
+def get_stat(video_id):
+    stat_request = YOUTUBE.videos().list(
+        part="statistics",
+        id=video_id
+    )
+    stat_response = stat_request.execute()
+    stat = stat_response['items'][0]['statistics']
+
+    video_stat = {
+        'view_count': stat['viewCount'],
+        'like_count': stat['likeCount'],
+        'favorite_count': stat['favoriteCount'],
+        'comment_count': stat['commentCount']
+    }
+    return video_stat
 
 #################################################################################
 #                       Caption
@@ -80,6 +90,8 @@ def store_dictation(video_url):
     dictation = audio2text(audio_filepath)
     if dictation:
         document = {"_id": video_id, "text": dictation}
+        stat = get_stat(video_id)
+        document.update(stat)
         mongo.youtube_insert_dictation(document)
     else:
         raise Exception("Can't get diactation")
@@ -88,7 +100,7 @@ def store_dictation(video_url):
 #                       Caption
 #################################################################################
 def find_captions(video_id):
-    caption_list = youtube.captions().list(
+    caption_list = YOUTUBE.captions().list(
         part="snippet",
         videoId=video_id
     ).execute()
@@ -199,7 +211,7 @@ def audio2text(audio_filepath):
 #   Comments
 #################################################################################
 def store_comments(video_id):
-    request = youtube.commentThreads().list(
+    request = YOUTUBE.commentThreads().list(
         part="snippet",
         videoId=video_id,
         textFormat="plainText",
@@ -274,5 +286,3 @@ def process_comment_item(item):
 #                 comments_data.append(reply_comment)
 
 #     return comments_data
-
-search_and_get("HongKong Resistance", 5000)
