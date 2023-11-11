@@ -68,7 +68,6 @@ def iso8601_to_short_format(iso8601_string):
     custom_format_string = datetime_obj.strftime("%Y %b %d %H:%M")
     return custom_format_string
 
-
 def format_dict(d, indent=0):
     for key, value in d.items():
         print(' ' * indent + str(key) + ':', end='')
@@ -77,3 +76,10 @@ def format_dict(d, indent=0):
             format_dict(value, indent + 4)
         else:
             print(f' {value}')
+
+import tiktoken
+def count_tokens(prompt):
+    encoding = tiktoken.get_encoding("cl100k_base")
+    num_tokens = len(encoding.encode(prompt))
+    return num_tokens
+
