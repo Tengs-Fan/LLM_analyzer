@@ -1,0 +1,3 @@
+[submodule "PushshiftDumps"]
+	path = PushshiftDumps
+	url = https://github.com/Watchful1/PushshiftDumps.git
