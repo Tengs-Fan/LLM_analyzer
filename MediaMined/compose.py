@@ -26,7 +26,8 @@ def format_post_body(post):
 {utils.iso8601_to_short_format(post['published_at'])}
 Upvotes: {post['upvotes']}
 Title: {post['title']}
-    {post['content']}
+
+{post['content']}
 Comments:
 ---'''
 
@@ -37,7 +38,8 @@ def format_reddit_comments(comment):
 {utils.iso8601_to_short_format(comment['published_at'])}
 By {comment['author']}
 Upvotes: {comment['upvotes']} 
-    {comment['body']}
+
+{comment['body']}
 ---'''
 
 
@@ -82,15 +84,5 @@ Likes: {comment['like_count']}
     {comment['comment_text']}
 ---'''
 
-try: 
-    text = compose_youtube_video("CynzeRes7mY")
-    print(text)
-except Exception as e:
-    print(f"Error composing for video :", e)
 
-# try: 
-#     text = compose_reddit_post("dfdqf8")
-#     print(text)
-# except Exception as e:
-#     print("error composing {17a1ph8}:", e)
 
