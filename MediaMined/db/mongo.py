@@ -15,10 +15,8 @@ def _get_items_by_id(collection, key, id):
     """
     cursor = collection.find({key: id})
     items_list = list(cursor)
-    if len(items_list) > 1:
+    if len(items_list) >= 1:
         return items_list
-    elif items_list:
-        return items_list[0]
     else:
         raise Exception(f"can't find this {id} of {key} in {collection}")
 
@@ -48,6 +46,10 @@ def _update_document(collection, query_key, query_value, update_data):
         {query_key: query_value},
         {'$set': update_data}
     )
+
+def _get_top_from_key_and_sort(collection, key, key_id, sort_on, top_n = 50):
+    comments_cursor = collection.find({key: key_id}).sort(sort_on, -1).limit(top_n)
+    return comments_cursor
 
 def _get_all(collection):
     """
