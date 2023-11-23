@@ -1,6 +1,7 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain.prompts import FewShotChatMessagePromptTemplate
+from langchain.embeddings import OpenAIEmbeddings
 from .utils import utils
 
 import os
@@ -16,6 +17,12 @@ chatGPT3_16k = ChatOpenAI(
 chatGPT4_100k = ChatOpenAI(
     temperature=0.2, 
     model_name="gpt-4-1106-preview",
+    openai_api_key=os.getenv("OPENAI_API_KEY")
+    )
+
+
+embeddings_model = OpenAIEmbeddings(
+    # model_name="text-embedding-ada-002",
     openai_api_key=os.getenv("OPENAI_API_KEY")
     )
 
