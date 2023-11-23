@@ -15,15 +15,11 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 AUDIO_DIR = "Youtube"       
 
 def search_and_get(query, view_threshold = 10000):
-    search_results = search_videos(query)
+    search_results = search_videos(query, "relevance")
     for item in search_results:
         video_id = item['id']['videoId']
-        video_request = YOUTUBE.videos().list(
-            part="statistics",
-            id=video_id
-        )
-        video_response = video_request.execute()
-        view_count = int(video_response['items'][0]['statistics']['viewCount'])
+        stat = get_stat(video_id)
+        view_count = int(stat["view_count"])
         # Check if view count exceeds the threshold
         if view_count > view_threshold:
             get_dictation_and_comments(video_id)
@@ -38,10 +34,15 @@ def get_dictation_and_comments(video_id):
     except Exception as e:
         print(f"Can't get {video_id} because:", e)
 
-def search_videos(query, max_results = 50):
+
+#################################################################################
+#                       Search
+#################################################################################
+def search_videos(query, order, max_results = 50):
     search_response = YOUTUBE.search().list(
         q=query,
         type="video",
+        order=order,
         part="id,snippet",
         maxResults=max_results
     ).execute()
@@ -68,7 +69,7 @@ def get_stat(video_id):
     return video_stat
 
 #################################################################################
-#                       Caption
+#                       Dictation
 #################################################################################
 def store_dictation(video_url):
     video_id = utils.extract_id_from_url(video_url)
