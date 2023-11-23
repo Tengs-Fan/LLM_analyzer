@@ -17,11 +17,8 @@ DATA_DIR = "DataFrame"
 client = MongoClient('localhost', 27017)
 reddit = client['reddit']
 posts = reddit['posts']
-selected_post = reddit['selected_posts']
-selected_post1 = reddit['selected_posts1']
-
-time_2010_1_1 = datetime(2010, 1, 1)
-time_2023_04_01 = datetime(2023, 4, 1)
+selected_posts = reddit['selected_posts']
+selected_posts1 = reddit['selected_posts1']
 
 def update_utc_to_int(collection):
     # Find records where 'created_utc' is stored as a string
@@ -43,9 +40,9 @@ def stratified_sample(number_of_month):
     # else:
     #     number_selected = 1000 + (number_of_month - 1000) * 0.05        
     if number_of_month < 100:
-        number_selected = number_of_month * 0.1
+        number_selected = 24
     elif number_of_month < 1000:
-        number_selected = 10 + (number_of_month - 100) * 0.01
+        number_selected = 24 + (number_of_month - 100) * 0.01
     else:
         number_selected = 100 + (number_of_month - 1000) * 0.005        
 
@@ -73,7 +70,7 @@ def each_month(collection, start_date, sort_on):
 
     next_month = start_date.replace(day=1) + timedelta(days=32)
 
-    return selected_records, next_month, num_records_to_select
+    return selected_records, next_month, len(sorted_records)
 
 def number_plot():
 
@@ -86,9 +83,9 @@ def number_plot():
     else:
         dates = []
         values = []
-        current = time_2010_1_1
+        current = datetime(2010, 1, 1)
         dates.append(current)
-        while current < time_2023_04_01:
+        while current < datetime(2023, 4, 1):
             record, current, num = each_month(posts, current , 'score')
             dates.append(current)
             values.append(num)
@@ -117,20 +114,6 @@ def number_plot():
     plt.tight_layout()
     plt.show()
 
-def convert_dataframe(collection):
-
-    output_filename = 'all_selected_post.pkl'  # You can change the file name as needed
-    output_filepath = os.path.join(DATA_DIR, output_filename)
-
-    if os.path.exists(output_filepath):
-        df = pd.read_pickle(output_filepath)
-    else:
-        # Query the collection and aggregate the data
-        data = list(collection.find({}))
-        df = pd.DataFrame(pd.json_normalize(data))
-        df.to_pickle(output_filepath)
-
-    print(df.head())
 
 def process_post(text):
     client = MongoClient('localhost', 27017)
@@ -160,7 +143,7 @@ def process_post(text):
                 'Attitudes': formatted_attitudes,
                 'OtherWords': parsed_data.get('OtherWords', '')
             }
-            # selected_posts.insert_one(post)
+            selected_posts.insert_one(post)
             print(f"Completed analysis of {text['id']}")
         except Exception as e:
             print(f"Error composing {text['id']}: {e}")
@@ -171,7 +154,7 @@ if __name__ == '__main__':
     import sys
     processes = int(sys.argv[1])
     
-    current = datetime(2010, 1, 1)
+    current = datetime(2014, 5, 1)
     while current < datetime(2023, 4, 1):
         records, current, num = each_month(posts, current , 'score')
         print(f"processing {num} post in {current}")
