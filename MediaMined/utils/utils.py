@@ -61,6 +61,20 @@ def format_utc_to_iso8601(utc_timestamp):
     iso8601_formatted_string = utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
     return iso8601_formatted_string
 
+def utc_to_short_format(utc_timestamp):
+    """
+    Converts a UTC timestamp to a ISO8601 string (used by Youtube).
+
+    :param utc_timestamp: The UTC timestamp as a float or int.
+    :return: The ISO8601 string representation of the timestamp.
+    """
+    # Convert the timestamp to a datetime object
+    utc_datetime = datetime.utcfromtimestamp(utc_timestamp)
+    
+    # Format the datetime object as a string
+    custom_format_string = utc_datetime.strftime("%Y %b %d %H:%M")
+    return custom_format_string
+
 def iso8601_to_short_format(iso8601_string):
     # Parse the ISO 8601 formatted string into a datetime object
     datetime_obj = datetime.strptime(iso8601_string, "%Y-%m-%dT%H:%M:%SZ")
