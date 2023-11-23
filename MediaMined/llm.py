@@ -1,5 +1,6 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, AIMessagePromptTemplate, HumanMessagePromptTemplate
+from langchain.prompts import FewShotChatMessagePromptTemplate
 from .utils import utils
 
 import os
@@ -7,13 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 chatGPT3_16k = ChatOpenAI(
-    temperature=0.4, 
+    temperature=0.2, 
     model_name="gpt-3.5-turbo-1106",
     openai_api_key=os.getenv("OPENAI_API_KEY")
     )
 
 chatGPT4_100k = ChatOpenAI(
-    temperature=0.3, 
+    temperature=0.2, 
     model_name="gpt-4-1106-preview",
     openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -31,8 +32,13 @@ task_template = (
 """)
 task_prompt = HumanMessagePromptTemplate.from_template(task_template)
 
-related_post = """
-2019 Jan 01 17:38
+example_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("human", "{input}"),
+        ("ai", "{output}"),
+    ]
+)
+related_post = """2019 Jan 01 17:38
 Upvotes: 1034
 Title: Impact of National Security Law on Hong Kong's Freedom
 
@@ -57,73 +63,80 @@ Upvotes: 275
 I think the law is necessary for national security, but I'm worried about privacy.
 """
 
-reply_related = (
-""" {
-  "Topic": ["National Security Law", "Privacy", "Human Rights", "Protest"],
-  "Attitudes": [
-    {
-      "Topic": "Surveillance",
-      "Relevance": 10,
-      "Sentiment": -7,
-    },
-    {
-      "Topic": "Security Law",
-      "Relevance": 10,
-      "Sentiment": -8,
-    },
-    {
-      "Topic": "Police",
-      "Relevance": 9,
-      "Sentiment": -9,
-    },
-    {
-      "Topic": "Resistance",
-      "Relevance": 8,
-      "Sentiment": 5,
-    },
-    {
-      "Topic": "Immigration",
-      "Relevance": 6,
-      "Sentiment": -3,
-    }
-  ],
-  "OtherWords": "The general tone in discussions indicates a growing unease about personal freedoms and the future of democracy in Hong Kong."
-}""")
-# example_prompt = AIMessagePromptTemplate.from_template(example_template)
+reply_related = """{
+  "Topics": ["National Security Law", "Privacy", "Freedom"],
+  "Attitudes": {
+    "Surveillance": {"Relevance": 10, "Sentiment": -6},
+    "Privacy": {"Relevance": 10, "Sentiment": -8},
+    "Human Rights": {"Relevance": 7, "Sentiment": -6},
+    "Democracy": {"Relevance": 4, "Sentiment": -6},
+    "Freedom": {"Relevance": 10, "Sentiment": -8},
+    "Police": {"Relevance": 1, "Sentiment": -2},
+    "Resistance": {"Relevance": 3, "Sentiment": 5},
+    "China": {"Relevance": 4, "Sentiment": -6}
+  },
+  "OtherWords": "Growing unease about personal freedoms and the future of democracy in Hong Kong."
+}"""
 
 
-unrelated_post = """2019 Oct 09 07:38
-Upvotes: 1034
-Title: Best Hiking Trails in Hong Kong
-    
+unrelated_post = """2020 Mar 15 15:05
+Upvotes: 926
+Title: Exploring Hong Kong's Street Food Scene
+
 Comments
 ---
-2019 Oct 09 10:12
-By frauenarzZzt
-Upvotes: 123 
+2020 Mar 15 16:20
+By FoodieHK88
+Upvotes: 340 
 
-Dragon's Back is a must-try, offers amazing views!
+You have to try the egg waffles in Mong Kok, they're crispy and delicious!
 ---
-2019 Oct 09 07:40
-By Nichchk
-Upvotes: 75 
+2020 Mar 15 15:30
+By TravellerJoe
+Upvotes: 215 
 
-Lion Rock has a challenging path but it's totally worth it.
+The fish balls and curry skewers at Temple Street Night Market are a must. So flavorful!
 ---
-2019 Oct 09 11:08
-By Dr_Rockso89
-Upvotes: 1534 
+2020 Mar 15 17:45
+By LocalGourmet
+Upvotes: 287 
 
-Don't forget to check out the MacLehose Trail, it's fantastic."""
+Don't miss out on the dim sum in Central. The shrimp dumplings are amazing.
+---
+2020 Mar 15 18:10
+By VeggieDelight
+Upvotes: 132 
+
+For vegetarians, the tofu stalls in Causeway Bay offer a great variety. The spicy tofu is my favorite.
+"""
 reply_unrelated = """{
-  "Topic": [Hiking", "Outdoor Activities"],
-  "Ralted": false
-  "OtherWords": "This one is totally unrelated"
+  "Topics": ["Street Food", "Local Cuisine", "Culinary Exploration"],
+  "Attitudes": {
+    "Surveillance": {"Relevance": 0, "Sentiment": 0},
+    "Privacy": {"Relevance": 0, "Sentiment": 0},
+    "Human Rights": {"Relevance": 0, "Sentiment": 0},
+    "Democracy": {"Relevance": 0, "Sentiment": 0},
+    "Freedom": {"Relevance": 0, "Sentiment": 0},
+    "Police": {"Relevance": 0, "Sentiment": 0},
+    "Resistance": {"Relevance": 0, "Sentiment": 0},
+    "China": {"Relevance": 0, "Sentiment": 0}
+  },
+  "OtherWords": "This post is totally unrelated to surveillance, but centered around Hong Kong's vibrant street food culture and culinary diversity."
 }"""
+
+examples = [
+    {"input": related_post, "output": reply_related },
+    {"input": unrelated_post, "output": reply_unrelated },
+]
+
+few_shot_prompt = FewShotChatMessagePromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
+)
 
 # analyze_reddit_post(unrelated_post)
 input_prompts = ChatPromptTemplate.from_messages(
-    [system_prompt, task_prompt]
+    [system_prompt, few_shot_prompt, task_prompt]
 )
 
 # Summarize a video dictation
@@ -135,8 +148,8 @@ def summarize_video_dictation(dictation, aimed_words):
 
 # Get a analysis of reddit post 
 def analyze_reddit_post(post):
-    task = "Analyze the sentiment and themes in the provided Reddit post and comments related to state surveillance in Hong Kong."
-    end = "Provide your analysis in JSON format."
+    task = "Analyze the topics and sentiments in the Reddit post and comments, the Topic field is about the general theme, the Attitudes is only for the attitudes towards Surveillance, Privacy, Human Rights, Democracy, Freedom, Police, Resistance, China. Relevance is [0, 10], Sentiment is [-10, 10]"
+    end = "Provide your analysis in a directly parsible JSON string start with { and end with }, NO triple backticks !"
 
     return send_request(False, input_prompts, expert, task, post, end)
 
@@ -157,4 +170,4 @@ def send_request(use_100k, prompt, system, task, start, end):
     else: 
         raise Exception("There is more than 16K tokens: ", token_num)
 
-    print(responce.content)
+    return responce.content
