@@ -4,15 +4,18 @@ from .utils import utils
 #######################################
 # Composing Reddit posts
 #######################################
-def compose_reddit_post(post_id):
-    post = mongo.reddit_get_post(post_id)
+def compose_reddit_post(post_collection, comment_collection, key, post_id):
+    post = mongo._get_items_by_id(post_collection, key, post_id)
     if not post:
-        raise Exception("Can't find {post_id}")
+        raise Exception(f"Can't find {post_id}")
 
-    composed_text = format_post_body(post)
-    
+    if len(post) > 1 :
+        print(f"post: {post[0]['id']} has more than 1 records in database, take the 1st one");
+
+    composed_text = format_post_body(post[0])
+
     # Fetch the top comments for the post
-    top_comments = mongo.reddit_get_top_comments_by_post_id(post_id)
+    top_comments = mongo._get_top_from_key_and_sort(comment_collection, "parent_id", "t3_" + post_id, "score", 30);
 
     # Append the top comments to the composed text
     for comment in top_comments:
@@ -21,23 +24,35 @@ def compose_reddit_post(post_id):
     return composed_text
 
 def format_post_body(post):
-    # Format the post details including author, date, upvotes, etc.
+
+    # Check if 'ups' and 'downs' are available
+    if 'ups' in post and 'downs' in post:
+        upvotes = f"Upvotes: {post['ups']}"
+        downvotes = f"Downvotes: {post['downs']}"
+    else:
+        upvotes = f"Score: {post['score']} (exact upvotes/downvotes not available)"
+        downvotes = "\n"
+
+    # Format the post details
     return f'''
-{utils.iso8601_to_short_format(post['published_at'])}
-Upvotes: {post['upvotes']}
+{utils.utc_to_short_format(int(post['created_utc']))}
+Subreddit: {post['subreddit']}
+Author: {post['author']}
+{upvotes} {downvotes}
 Title: {post['title']}
 
-{post['content']}
+{post['selftext']}
 Comments:
----'''
+---
+'''
 
 
 def format_reddit_comments(comment):
     # Format the comment details
     return f'''
-{utils.iso8601_to_short_format(comment['published_at'])}
+{utils.utc_to_short_format(int(comment['created_utc']))}
 By {comment['author']}
-Upvotes: {comment['upvotes']} 
+Upvotes: {comment['score']} 
 
 {comment['body']}
 ---'''
